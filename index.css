@@ -15,8 +15,8 @@
 
 #board {
   border: 3px solid yellow;
-  width: 600px;
-  height: 600px;
+  width: 400px;
+  height: 400px;
   display: grid;
 }
 

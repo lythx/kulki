@@ -1,13 +1,21 @@
 import config from './Config.js'
 import { table } from './Table.js'
-const boardEl: HTMLElement = document.getElementById('board') as any
-const listeners: ((x: number, y: number, e: MouseEvent) => void)[] = []
+const boardEl = document.getElementById('board') as HTMLElement
+const clickListeners: ((x: number, y: number, e: MouseEvent) => void)[] = []
+const hoverListeners: ((x: number, y: number, e: MouseEvent) => void)[] = []
 
-const emitClick = (x: number, y: number, ev: MouseEvent) => {
-  for (const e of listeners) {
+const emitClick = (x: number, y: number, ev: MouseEvent): void => {
+  for (const e of clickListeners) {
     e(x, y, ev)
   }
 }
+
+const emitHover = (x: number, y: number, ev: MouseEvent): void => {
+  for (const e of hoverListeners) {
+    e(x, y, ev)
+  }
+}
+
 
 const create = (): void => {
   boardEl.style.gridTemplateRows = `repeat(${config.rows}, 1fr)`
@@ -18,6 +26,7 @@ const create = (): void => {
       el.className = `tile`
       el.id = `tile${i}x${j}`
       el.onclick = (e) => emitClick(i, j, e)
+      el.onmouseover = (e) => emitHover(i, j, e)
       boardEl.appendChild(el)
     }
   }
@@ -38,12 +47,13 @@ const render = (): void => {
   }
 }
 
-
-
 export const board = {
   create,
   render,
   onClick: (callback: (x: number, y: number, e: MouseEvent) => void): void => {
-    listeners.push(callback)
+    clickListeners.push(callback)
+  },
+  onHover: (callback: (x: number, y: number, e: MouseEvent) => void): void => {
+    hoverListeners.push(callback)
   }
 }
