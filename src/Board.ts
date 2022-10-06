@@ -1,5 +1,6 @@
 import config from './Config.js'
 import { table } from './Table.js'
+import { isBallColor } from './BallColor.js'
 const boardEl = document.getElementById('board') as HTMLElement
 const clickListeners: ((x: number, y: number, e: MouseEvent) => void)[] = []
 const hoverListeners: ((x: number, y: number, e: MouseEvent) => void)[] = []
@@ -16,7 +17,6 @@ const emitHover = (x: number, y: number, ev: MouseEvent): void => {
   }
 }
 
-
 const create = (): void => {
   boardEl.style.gridTemplateRows = `repeat(${config.rows}, 1fr)`
   boardEl.style.gridTemplateColumns = `repeat(${config.columns}, 1fr)`
@@ -25,6 +25,7 @@ const create = (): void => {
       const el = document.createElement('div')
       el.className = `tile`
       el.id = `tile${i}x${j}`
+      el.style.background = config.colours.none
       el.onclick = (e) => emitClick(i, j, e)
       el.onmouseover = (e) => emitHover(i, j, e)
       boardEl.appendChild(el)
@@ -42,7 +43,14 @@ const render = (): void => {
   for (const [i, row] of table.entries()) {
     for (const [j, entry] of row.entries()) {
       const el = getTile(i, j)
-      el.innerHTML = entry
+      if (isBallColor(entry)) {
+        const ball = document.createElement('div')
+        ball.className = 'ball'
+        ball.style.background = entry
+        el.appendChild(ball)
+      } else {
+        el.style.background = config.colours[entry]
+      }
     }
   }
 }

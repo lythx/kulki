@@ -29,7 +29,7 @@ const getMoves = (p: Point, end: Point): Point[] | undefined => {
     if (isEqual(e, end)) {
       return getFullPath({ ...e, parent: p })
     }
-    if (table?.[e.x]?.[e.y] === '0' && !closedList.some(a => isEqual(a, e))) {
+    if (table?.[e.x]?.[e.y] === 'none' && !closedList.some(a => isEqual(a, e))) {
       openList.push({ ...e, parent: p })
     }
   }
@@ -44,7 +44,6 @@ const find = (start: Point, end: Point): { x: number, y: number }[] | undefined 
   do {
     const arr = getMoves(getClosestPoint(end), end)
     if (Array.isArray(arr)) {
-      console.log(arr.length)
       return arr
     }
   } while (openList.length !== 0)

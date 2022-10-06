@@ -1,4 +1,10 @@
 export default {
-  rows: 8,
-  columns: 8
+  rows: 9,
+  columns: 9,
+  colours: {
+    path: 'red',
+    prevPath: 'purple',
+    select: 'yellow',
+    none: 'gray'
+  }
 }
