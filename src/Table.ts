@@ -1,15 +1,33 @@
 import config from './Config.js'
 import { BallColor } from './BallColor.js';
 
-export const table: (BallColor | 'path' | 'select' | 'prevPath' | 'none')[][] =
-  new Array<(BallColor | 'path' | 'select' | 'prevPath' | 'none')[]>(config.rows)
-    .fill([]).map(() => new Array<(BallColor | 'path' | 'select' | 'prevPath' | 'none')>
-      (config.columns).fill('none'));
+class Table extends Array<(BallColor | 'path' | 'select' | 'prevPath' | 'none')[]> {
 
-export const clearPath = () => {
-  for (let i = 0; i < table.length; i++) {
-    for (let j = 0; j < table[i].length; j++) {
-      if (['path', 'prevPath'].includes(table[i][j])) { table[i][j] = 'none' }
+  constructor() {
+    super()
+    this.length = config.rows
+    const arr = new Array<(BallColor | 'path' | 'select' | 'prevPath' | 'none')>(config.columns).fill('none')
+    for (let i = 0; i < config.columns; i++) { this[i] = [...arr] }
+  }
+
+  clearPath(clearOnlyConfirmed?: true) {
+    const arr = ['prevPath', 'path']
+    if (clearOnlyConfirmed) { arr.pop() }
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this[i].length; j++) {
+        if (arr.includes(this[i][j])) { this[i][j] = 'none' }
+      }
     }
   }
+
+  confirmPath() {
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this[i].length; j++) {
+        if (this[i][j] === 'path') { this[i][j] = 'prevPath' }
+      }
+    }
+  }
+
 }
+
+export const table = new Table()

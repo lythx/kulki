@@ -6,5 +6,6 @@ export default {
     prevPath: 'purple',
     select: 'yellow',
     none: 'gray'
-  }
+  },
+  pathClearTimeout: 1500
 }
