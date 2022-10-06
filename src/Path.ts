@@ -8,8 +8,8 @@ const isEqual = (p1: Point, p2: Point): boolean => p1.x === p2.x && p1.y === p2.
 
 const getClosestPoint = (end: Point): Point => {
   if (openList.length === 0) { throw new Error('openlist is empty in getClosestPoint') }
-  openList.sort((a, b) => Math.abs(end.x - a.x) + Math.abs(end.y - a.y) -
-    Math.abs(end.x - b.x) + Math.abs(end.y - b.y))
+  openList.sort((a, b) => Math.abs(end.x - a.x) + Math.abs(a.y - end.y) -
+    Math.abs(end.x - b.x) + Math.abs(a.y - end.y))
   return openList[0]
 }
 
@@ -23,8 +23,8 @@ const getFullPath = (p: Point): Point[] => {
 }
 
 const getMoves = (p: Point, end: Point): Point[] | undefined => {
-  let points = [{ x: p.x - 1, y: p.y }, { x: 0, y: p.y - 1 },
-  { x: p.x + 1, y: 0 }, { x: 0, y: p.y + 1 }]
+  let points = [{ x: p.x - 1, y: p.y }, { x: p.x, y: p.y - 1 },
+  { x: p.x + 1, y: p.y }, { x: p.x, y: p.y + 1 }]
   for (const e of points) {
     if (isEqual(e, end)) {
       return getFullPath({ ...e, parent: p })
@@ -35,17 +35,17 @@ const getMoves = (p: Point, end: Point): Point[] | undefined => {
   }
   openList = openList.filter(a => !isEqual(a, p))
   closedList.push(p)
-  console.log(openList)
 }
 
 const find = (start: Point, end: Point): { x: number, y: number }[] | undefined => {
-  if (isEqual(start, end)) { return [start] }
+  if (isEqual(start, end)) { return [] }
   openList = [start]
+  closedList.length = 0
   do {
-    const status = getMoves(getClosestPoint(end), end)
-    if (Array.isArray(status)) {
-      console.log(openList)
-      return status
+    const arr = getMoves(getClosestPoint(end), end)
+    if (Array.isArray(arr)) {
+      console.log(arr.length)
+      return arr
     }
   } while (openList.length !== 0)
 }

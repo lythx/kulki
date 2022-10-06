@@ -1,5 +1,5 @@
 import { board } from './Board.js';
-import { table } from './Table.js'
+import { table, clearPath } from './Table.js'
 import { path } from './Path.js'
 
 let selected: { x: number, y: number } | undefined
@@ -17,7 +17,7 @@ board.onClick((x, y) => {
     lastPath = path.find(selected, { x, y })
   }
   for (const e of lastPath ?? []) {
-    table[e.y][e.x] = '1'
+    table[e.x][e.y] = '1'
   }
   console.log(lastPath)
   // else if (table[x][y] === 'S') {
@@ -30,7 +30,16 @@ board.onClick((x, y) => {
   board.render()
 })
 board.onHover((x, y) => {
-  if (selected === undefined || table[x][y] !== '0') { return }
+  if (selected === undefined || !['0', '1'].includes(table[x][y])) { return }
+  clearPath()
+  const p = path.find(selected, { x, y })
+  for (const e of p ?? []) {
+    if (table[e.x][e.y] === '0') {
+      table[e.x][e.y] = '1'
+    }
+  }
+  board.render()
+  // board.render()
   // const p = path.find(x, y)
   // if (p === false) {
   //   for (const row of table) {
