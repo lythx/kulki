@@ -7,5 +7,7 @@ export default {
     select: 'yellow',
     none: 'gray'
   },
-  pathClearTimeout: 1500
+  pathClearTimeout: 1500,
+  startBalls: 3,
+  nextBalls: 3
 }

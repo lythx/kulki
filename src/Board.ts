@@ -1,7 +1,8 @@
 import config from './Config.js'
 import { table } from './Table.js'
-import { isBallColor } from './BallColor.js'
+import { isBall } from './Ball.js'
 const boardEl = document.getElementById('board') as HTMLElement
+const nextEl = document.getElementById('next') as HTMLElement
 const clickListeners: ((x: number, y: number, e: MouseEvent) => void)[] = []
 const hoverListeners: ((x: number, y: number, e: MouseEvent) => void)[] = []
 
@@ -31,6 +32,13 @@ const create = (): void => {
       boardEl.appendChild(el)
     }
   }
+  for (let i = 0; i < config.nextBalls; i++) {
+    const el = document.createElement('div')
+    el.className = `tile`
+    el.id = `next${i}`
+    el.style.background = config.colours.none
+    nextEl.appendChild(el)
+  }
 }
 
 const getTile = (x: number, y: number): HTMLElement => {
@@ -43,7 +51,7 @@ const render = (): void => {
   for (const [i, row] of table.entries()) {
     for (const [j, entry] of row.entries()) {
       const el = getTile(i, j)
-      if (isBallColor(entry)) {
+      if (isBall(entry)) {
         const ball = document.createElement('div')
         ball.className = 'ball'
         ball.style.background = entry

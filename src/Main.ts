@@ -1,11 +1,13 @@
 import { board } from './Board.js';
 import { table } from './Table.js'
 import { path } from './Path.js'
-import { isBallColor } from './BallColor.js'
+import { isBall } from './Ball.js'
 import config from './Config.js'
 
 let selected: { x: number, y: number } | undefined
 let isPathValid = false
+
+gra ballblazer
 
 board.create()
 board.render()
@@ -27,7 +29,7 @@ board.onClick((x, y) => {
   board.render()
 })
 board.onHover((x, y) => {
-  if (selected === undefined || isBallColor(table[x][y])) { return }
+  if (selected === undefined || isBall(table[x][y])) { return }
   table.clearPath()
   const p = path.find(selected, { x, y })
   isPathValid = p !== undefined

@@ -13,6 +13,18 @@
   justify-content: center;
 }
 
+#next {
+  position: absolute;
+  left: 100px;
+  top: 100px;
+  width: 150px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  grid-template-columns: repeat(3, 1fr);
+  border: 2px solid orange;
+}
+
 #board {
   border: 2px solid orange;
   width: 400px;
@@ -24,6 +36,9 @@
   width: 100%;
   height: 100%;
   border: 1px solid orange;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ball {
