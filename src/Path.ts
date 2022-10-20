@@ -8,8 +8,8 @@ const isEqual = (p1: Point, p2: Point): boolean => p1.x === p2.x && p1.y === p2.
 
 const getClosestPoint = (end: Point): Point => {
   if (openList.length === 0) { throw new Error('openlist is empty in getClosestPoint') }
-  openList.sort((a, b) => Math.abs(end.x - a.x) + Math.abs(a.y - end.y) -
-    Math.abs(end.x - b.x) + Math.abs(a.y - end.y))
+  openList.sort((a, b) => Math.abs(end.x - a.x) + Math.abs(end.y - a.y) -
+    (Math.abs(end.x - b.x) + Math.abs(end.y - b.y)))
   return openList[0]
 }
 

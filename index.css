@@ -15,20 +15,30 @@
 
 #next {
   position: absolute;
-  left: 100px;
-  top: 100px;
   width: 150px;
   height: 50px;
+  left: 0;
+  top: 0;
   display: grid;
   place-items: center;
   grid-template-columns: repeat(3, 1fr);
   border: 2px solid orange;
 }
 
+#content {
+  height: 400px;
+  width: 800px;
+  align-items: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 #board {
   border: 2px solid orange;
   width: 400px;
-  height: 400px;
+  height: 100%;
   display: grid;
 }
 

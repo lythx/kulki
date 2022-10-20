@@ -7,19 +7,21 @@ import config from './Config.js'
 let selected: { x: number, y: number } | undefined
 let isPathValid = false
 
-gra ballblazer
+//gra ballblazer
 
 board.create()
 board.render()
 board.onClick((x, y) => {
   if (selected === undefined) {
-    if (table[x][y] === 'none') {
-      table[x][y] = 'select'
+    const tile = table[x][y]
+    if (isBall(tile)) {
+      table[x][y] = `select ${tile}`
       selected = { x, y }
     }
   } else {
     if (isPathValid === true) {
-      table.confirmPath()
+      table.confirmPath(x, y)
+      selected = undefined
       setTimeout(() => {
         table.clearPath(true)
         board.render()

@@ -1,6 +1,6 @@
 import config from './Config.js'
 import { table } from './Table.js'
-import { isBall } from './Ball.js'
+import { getBall, isBall, isPrevPathBall, isSelectedBall } from './Ball.js'
 const boardEl = document.getElementById('board') as HTMLElement
 const nextEl = document.getElementById('next') as HTMLElement
 const clickListeners: ((x: number, y: number, e: MouseEvent) => void)[] = []
@@ -51,14 +51,27 @@ const render = (): void => {
   for (const [i, row] of table.entries()) {
     for (const [j, entry] of row.entries()) {
       const el = getTile(i, j)
+      el.innerHTML = ''
+      let background: string = config.colours.none
+      let ball: string | undefined
       if (isBall(entry)) {
-        const ball = document.createElement('div')
-        ball.className = 'ball'
-        ball.style.background = entry
-        el.appendChild(ball)
+        ball = entry
+      } else if (isSelectedBall(entry)) {
+        ball = getBall(entry)
+        background = config.colours.select
+      } else if (isPrevPathBall(entry)) {
+        ball = getBall(entry)
+        background = config.colours.prevPath
       } else {
-        el.style.background = config.colours[entry]
+        background = config.colours[entry]
       }
+      if (ball !== undefined) {
+        const ballEl = document.createElement('div')
+        ballEl.className = 'ball'
+        ballEl.style.background = ball
+        el.appendChild(ballEl)
+      }
+      el.style.background = background
     }
   }
 }
