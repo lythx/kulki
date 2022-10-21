@@ -1,21 +1,17 @@
 import config from './Config.js'
 import { table } from './Table.js'
-import { getBall, isBall, isPrevPathBall, isSelectedBall } from './Ball.js'
+import { balls } from './Balls.js'
 const boardEl = document.getElementById('board') as HTMLElement
 const nextEl = document.getElementById('next') as HTMLElement
 const clickListeners: ((x: number, y: number, e: MouseEvent) => void)[] = []
 const hoverListeners: ((x: number, y: number, e: MouseEvent) => void)[] = []
 
 const emitClick = (x: number, y: number, ev: MouseEvent): void => {
-  for (const e of clickListeners) {
-    e(x, y, ev)
-  }
+  for (const e of clickListeners) { e(x, y, ev) }
 }
 
 const emitHover = (x: number, y: number, ev: MouseEvent): void => {
-  for (const e of hoverListeners) {
-    e(x, y, ev)
-  }
+  for (const e of hoverListeners) { e(x, y, ev) }
 }
 
 const create = (): void => {
@@ -54,13 +50,13 @@ const render = (): void => {
       el.innerHTML = ''
       let background: string = config.colours.none
       let ball: string | undefined
-      if (isBall(entry)) {
+      if (balls.isBall(entry)) {
         ball = entry
-      } else if (isSelectedBall(entry)) {
-        ball = getBall(entry)
+      } else if (balls.isSelected(entry)) {
+        ball = balls.get(entry)
         background = config.colours.select
-      } else if (isPrevPathBall(entry)) {
-        ball = getBall(entry)
+      } else if (balls.isPrevPath(entry)) {
+        ball = balls.get(entry)
         background = config.colours.prevPath
       } else {
         background = config.colours[entry]
@@ -73,6 +69,14 @@ const render = (): void => {
       }
       el.style.background = background
     }
+  }
+  for (const [i, e] of table.nextBalls.entries()) {
+    const el = document.getElementById(`next${i}`) as HTMLElement
+    const ball = document.createElement(`div`)
+    ball.className = 'ball'
+    ball.style.background = e
+    el.innerHTML = ''
+    el.appendChild(ball)
   }
 }
 
