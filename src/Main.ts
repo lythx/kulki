@@ -37,6 +37,7 @@ board.onClick((x, y) => {
       }, config.pathClearTimeout)
     }
   }
+  console.log('renderer')
   board.render()
 })
 board.onHover((x, y) => {

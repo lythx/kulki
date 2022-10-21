@@ -16,8 +16,10 @@ const isBall = (name: any): name is Ball => {
   return list.includes(name)
 }
 
-const get = (str: `select ${Ball}` | `prevPath ${Ball}`): Ball => {
-  return str.split(' ')[1] as Ball
+const get = <T extends string>(str: T):
+  T extends `select ${Ball}` | `prevPath ${Ball}` | Ball ? Ball : (Ball | undefined) => {
+  const split = str.split(' ')
+  return list.find(a => a === split[1] ?? split[0]) as Ball
 }
 
 const random = () => list[~~(Math.random() * list.length)]

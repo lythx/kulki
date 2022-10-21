@@ -3,7 +3,7 @@ import { balls, Ball } from './Balls.js';
 
 type Tile = Ball | 'path' | `select ${Ball}` | 'prevPath' | 'none' | `prevPath ${Ball}`
 
-class Table extends Array<Tile[]> {
+class Table extends Array<Tile[]>  {
 
   readonly nextBalls: Ball[]
 
@@ -70,6 +70,68 @@ class Table extends Array<Tile[]> {
     for (let i = 0; i < config.nextBalls; i++) {
       this.nextBalls.push(balls.random())
     }
+    let streak = false
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this[i].length; j++) {
+        if (this.handleStreak(i, j)) {
+          streak = true
+        }
+      }
+    }
+    return streak
+  }
+
+  handleStreak(x: number, y: number): boolean {
+    let ballsToDelete: { x: number, y: number }[] = []
+    let curStreak: { x: number, y: number }[] = []
+    const ball = this[x][y]
+    console.log(ball)
+    console.log(balls.get(ball))
+    if (balls.get(ball) === undefined) { return false }
+    let i = x + 1
+    let j = y + 1
+    while (this[i]?.[j] === ball) {
+      curStreak.push({ x: i, y: j })
+      i++
+      j++
+    }
+    if (curStreak.length > config.minStreak) {
+      ballsToDelete.push(...curStreak)
+    }
+    curStreak.length = 0
+    i = x + 1
+    while (this[i]?.[y] === ball) {
+      curStreak.push({ x: i, y })
+      i++
+    }
+    if (curStreak.length > config.minStreak) {
+      ballsToDelete.push(...curStreak)
+    }
+    curStreak.length = 0
+    i = x + 1
+    j = y + 1
+    while (this[i]?.[j] === ball) {
+      curStreak.push({ x: i, y: j })
+      i--
+      j--
+    }
+    if (curStreak.length > config.minStreak) {
+      ballsToDelete.push(...curStreak)
+    }
+    curStreak.length = 0
+    j = y + 1
+    while (this[x]?.[j] === ball) {
+      curStreak.push({ x, y: j })
+      j++
+    }
+    if (curStreak.length = config.minStreak) {
+      ballsToDelete.push(...curStreak)
+    }
+    console.table(ballsToDelete)
+    for (const e of ballsToDelete) {
+      this[e.x][e.y] = 'none'
+    }
+    return ballsToDelete.length > 0
   }
 
 }

@@ -9,5 +9,6 @@ export default {
   },
   pathClearTimeout: 1500,
   startBalls: 3,
-  nextBalls: 3
+  nextBalls: 3,
+  minStreak: 5
 }
