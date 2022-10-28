@@ -4,7 +4,7 @@ export default {
   colours: {
     path: 'red',
     prevPath: 'purple',
-    select: 'yellow',
+    prevBall: 'yellow',
     none: 'gray'
   },
   pathClearTimeout: 1500,

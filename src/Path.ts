@@ -30,7 +30,7 @@ const getMoves = (p: Point, end: Point): Point[] | undefined => {
     if (isEqual(e, end)) {
       return getFullPath({ ...e, parent: p })
     }
-    if (table?.[e.x]?.[e.y] === 'none' && !closedList.some(a => isEqual(a, e))) {
+    if (table[e.x]?.[e.y]?.ball === undefined && !closedList.some(a => isEqual(a, e))) {
       openList.push({ ...e, parent: p })
     }
   }
