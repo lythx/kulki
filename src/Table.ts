@@ -36,13 +36,16 @@ class Table extends Array<Tile[]>  {
   }
 
   clearPath(options?: { clearSelection?: true, clearOnlyPrev?: true }) {
-    const arr = ['prevPath', 'path']
+    const arr = ['prevPath', 'prevBall', 'path']
     if (options?.clearOnlyPrev) { arr.pop() }
     for (let i = 0; i < this.length; i++) {
       for (let j = 0; j < this[i].length; j++) {
         const cell = this[i][j]
         if (arr.includes(cell.type as string)) {
           this[i][j].type = undefined
+        }
+        if (options?.clearSelection && this[i][j].selected) {
+          this[i][j].selected = false
         }
       }
     }
@@ -76,65 +79,47 @@ class Table extends Array<Tile[]>  {
     this[x][y].ball = ball
     const canAppend = this.appendBalls()
     if (!canAppend) { return false }
-    let points = 0
-    const streak = this.handleStreak(x, y)
-    return points
-  }
-
-  private handleStreak(x: number, y: number): number | false {
-    if (this[x][y].ball === undefined) {
-      throw new Error('moved ball undefined in handle streak')
-    }
-    let streaks: { x: number, y: number }[][] = [...Array(8)].map(() => []);
-    const movedBall = this[x][y].ball as Ball
-    const isStreak = (a: number, b: number) => this[a]?.[b]?.ball === movedBall
-    let i = x - 1
-    while (isStreak(i, y)) {
-      streaks[0].push({ x: i--, y })
-    }
-    i = x - 1
-    let j = y + 1
-    while (isStreak(i, j)) {
-      streaks[1].push({ x: i--, y: j++ })
-    }
-    j = y + 1
-    while (isStreak(x, j)) {
-      streaks[2].push({ x, y: j++ })
-    }
-    i = x + 1
-    j = y + 1
-    while (isStreak(i, j)) {
-      streaks[3].push({ x: i++, y: j++ })
-    }
-    i = x + 1
-    while (isStreak(i, y)) {
-      streaks[4].push({ x: i++, y })
-    }
-    i = x + 1
-    j = y - 1
-    while (isStreak(i, j)) {
-      streaks[5].push({ x: i++, y: j-- })
-    }
-    j = y - 1
-    while (isStreak(x, j)) {
-      streaks[6].push({ x, y: j-- })
-    }
-    i = x - 1
-    j = y - 1
-    while (isStreak(i, j)) {
-      streaks[7].push({ x: i--, y: j-- })
-    }
-    console.table(streaks)
-    const ballsToDelete = streaks.filter(a => a.length >= config.minStreak - 1).flat()
-    if (ballsToDelete.length > 0) {
-      this[x][y].ball = undefined
-      this[x][y].type = 'prevBall'
+    const ballsToDelete: { x: number, y: number }[] = []
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this[i].length; j++) {
+        ballsToDelete.push(...this.handleStreak(i, j))
+      }
     }
     for (const e of ballsToDelete) {
       this[e.x][e.y].ball = undefined
       this[e.x][e.y].type = 'prevBall'
     }
-    return ballsToDelete.length === 0 ? false : ballsToDelete.length
+    return ballsToDelete.length
+  }
+
+  private handleStreak(x: number, y: number): { x: number, y: number }[] {
+    if (this[x][y].ball === undefined) {
+      return []
+    }
+    let streaks: { x: number, y: number }[][] = [...Array(4)].map(() => []);
+    const movedBall = this[x][y].ball as Ball
+    const isStreak = (a: number, b: number) => this[a]?.[b]?.ball === movedBall
+    let i = x - 1
+    let j = y + 1
+    while (isStreak(i, j)) {
+      streaks[0].push({ x: i--, y: j++ })
+    }
+    j = y + 1
+    while (isStreak(x, j)) {
+      streaks[1].push({ x, y: j++ })
+    }
+    i = x + 1
+    j = y + 1
+    while (isStreak(i, j)) {
+      streaks[2].push({ x: i++, y: j++ })
+    }
+    i = x + 1
+    while (isStreak(i, y)) {
+      streaks[3].push({ x: i++, y })
+    }
+    const ballsToDelete = streaks.filter(a => a.length >= config.minStreak - 1).flat()
+    if (ballsToDelete.length > 0) { ballsToDelete.push({ x, y }) }
+    return ballsToDelete
   }
 
   private findEmptyTiles(): { x: number, y: number }[] {
