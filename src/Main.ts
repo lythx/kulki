@@ -18,6 +18,7 @@ board.onClick((x, y) => {
       table.clearPath({ clearSelection: true })
     }
     table[x][y].selected = true
+    table[x][y].type = 'path'
     selected = { x, y }
   } else if (isPathValid === true) {
     const pointsOrLose = table.confirmMove(x, y)
@@ -27,6 +28,7 @@ board.onClick((x, y) => {
     }
     selected = undefined
     isPathValid = false
+    table.score += pointsOrLose
     setTimeout(() => {
       table.clearPath({ clearOnlyPrev: true })
       board.render()
@@ -46,5 +48,7 @@ board.onHover((x, y) => {
 })
 
 const onLose = () => {
-  console.log('lost :D')
+  selected = undefined
+  isPathValid = false
+  board.lose()
 }

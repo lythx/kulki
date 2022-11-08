@@ -1,8 +1,10 @@
 import config from './Config.js'
 import { table } from './Table.js'
 
-const boardEl = document.getElementById('board') as HTMLElement
-const nextEl = document.getElementById('next') as HTMLElement
+const wrapperEl = document.getElementById('wrapper') as HTMLDivElement
+const scoreEl = document.getElementById('score') as HTMLDivElement
+const boardEl = document.getElementById('board') as HTMLDivElement
+const nextEl = document.getElementById('next') as HTMLDivElement
 const clickListeners: ((x: number, y: number, e: MouseEvent) => void)[] = []
 const hoverListeners: ((x: number, y: number, e: MouseEvent) => void)[] = []
 
@@ -15,6 +17,7 @@ const emitHover = (x: number, y: number, ev: MouseEvent): void => {
 }
 
 const create = (): void => {
+  scoreEl.innerHTML = '0'
   boardEl.style.gridTemplateRows = `repeat(${config.rows}, 1fr)`
   boardEl.style.gridTemplateColumns = `repeat(${config.columns}, 1fr)`
   for (let i = 0; i < config.columns; i++) {
@@ -44,6 +47,7 @@ const getTile = (x: number, y: number): HTMLElement => {
 }
 
 const render = (): void => {
+  scoreEl.innerHTML = table.score.toString()
   for (const [i, row] of table.entries()) {
     for (const [j, entry] of row.entries()) {
       const el = getTile(i, j)
@@ -68,9 +72,38 @@ const render = (): void => {
   }
 }
 
+const lose = () => {
+  const createEl = (id: string, text?: string): HTMLDivElement => {
+    const el = document.createElement('div')
+    el.id = id
+    if (text !== undefined) { el.innerHTML = text }
+    return el
+  }
+  const bg = createEl('losebg')
+  const msg = createEl('loseprompt')
+  const header = createEl('loseheader', 'Przegrałeś!')
+  const text = createEl('losetext', `Wynik: ${table.score}`)
+  const button = createEl('losebt', 'Zagraj ponownie')
+  button.onclick = () => {
+    scoreEl.innerHTML = ''
+    boardEl.innerHTML = ''
+    nextEl.innerHTML = ''
+    bg.remove()
+    table.restart()
+    create()
+    render()
+  }
+  msg.appendChild(header)
+  msg.appendChild(text)
+  msg.appendChild(button)
+  bg.appendChild(msg)
+  wrapperEl.appendChild(bg)
+}
+
 export const board = {
   create,
   render,
+  lose,
   onClick: (callback: (x: number, y: number, e: MouseEvent) => void): void => {
     clickListeners.push(callback)
   },

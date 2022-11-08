@@ -9,6 +9,7 @@ interface Tile {
 
 class Table extends Array<Tile[]>  {
 
+  score = 0
   readonly nextBalls: Ball[]
 
   constructor() {
@@ -20,13 +21,17 @@ class Table extends Array<Tile[]>  {
         this[i][j] = { selected: false }
       }
     }
-    for (let i = 0; i < config.startBalls; i++) {
-      const row = this[~~(Math.random() * this.length)]
-      const random = ~~(Math.random() * this[0].length)
-      if (row[random].ball !== undefined) { i-- }
-      row[random].ball = balls.random()
-    }
     this.nextBalls = new Array(config.nextBalls).fill(null).map(() => balls.random())
+    this.appendBalls()
+  }
+
+  restart() {
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this[i].length; j++) {
+        this[i][j] = { selected: false }
+      }
+    }
+    this.appendBalls()
   }
 
   showPath(cells: { x: number, y: number }[]) {
@@ -77,8 +82,8 @@ class Table extends Array<Tile[]>  {
       throw new Error('Ball is undefined on move confirm')
     }
     this[x][y].ball = ball
-    const canAppend = this.appendBalls()
-    if (!canAppend) { return false }
+    const appendStatus = this.appendBalls()
+    if (appendStatus === 'no space') { return false }
     const ballsToDelete: { x: number, y: number }[] = []
     for (let i = 0; i < this.length; i++) {
       for (let j = 0; j < this[i].length; j++) {
@@ -89,6 +94,7 @@ class Table extends Array<Tile[]>  {
       this[e.x][e.y].ball = undefined
       this[e.x][e.y].type = 'prevBall'
     }
+    if (ballsToDelete.length === 0 && appendStatus === 'full') { return false }
     return ballsToDelete.length
   }
 
@@ -136,12 +142,16 @@ class Table extends Array<Tile[]>  {
 
   /**
    * Puts new balls on board
-   * @returns Boolean indicating whether theres enough place for new balls
+   * @returns No space if theres no space for new balls, 
+   * full if theres not empty space after the balls were placed, ok if none of those happened
    */
-  private appendBalls(): boolean {
+  private appendBalls(): 'ok' | 'no space' | 'full' {
     const emptyTiles = this.findEmptyTiles()
-    if (emptyTiles.length < 3) {
-      return false
+    let full = false
+    if (emptyTiles.length < this.nextBalls.length) {
+      return 'no space'
+    } else if (emptyTiles.length === this.nextBalls.length) {
+      full = true
     }
     for (const e of this.nextBalls) {
       const rand = ~~(Math.random() * emptyTiles.length)
@@ -153,7 +163,8 @@ class Table extends Array<Tile[]>  {
     for (let i = 0; i < config.nextBalls; i++) {
       this.nextBalls.push(balls.random())
     }
-    return true
+    if (full) { return 'full' }
+    return 'ok'
   }
 
 }

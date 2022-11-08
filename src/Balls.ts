@@ -2,7 +2,7 @@ const list = ['white', 'black', 'blue', 'red', 'yellow', 'pink', 'green'] as con
 
 export type Ball = typeof list[number]
 
-const random = () => list[~~(Math.random() * list.length)]
+const random = (): Ball => list[~~(Math.random() * list.length)]
 
 export const balls = {
   list,
