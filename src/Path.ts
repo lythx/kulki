@@ -16,9 +16,10 @@ const getClosestPoint = (end: Point): Point => {
 
 const getFullPath = (p: Point): Point[] => {
   const path = []
-  while (p.parent !== undefined) {
-    path.push(p)
-    p = p.parent
+  let step: Point | undefined = p
+  while (step !== undefined) {
+    path.push(step)
+    step = step.parent
   }
   return path
 }
