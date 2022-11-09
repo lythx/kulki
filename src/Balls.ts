@@ -1,4 +1,4 @@
-const list = ['white'] as const
+const list = ['white', 'black', 'blue', 'red', 'yellow', 'pink', 'green'] as const
 
 export type Ball = typeof list[number]
 
