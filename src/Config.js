@@ -7,8 +7,9 @@ export default {
     prevBall: 'yellow',
     none: 'gray'
   },
-  pathClearTimeout: 1500,
+  pathClearTimeout: 600,
+  moveTimeout: 600,
   startBalls: 3,
-  nextBalls: 50,
+  nextBalls: 3,
   minStreak: 5
 }

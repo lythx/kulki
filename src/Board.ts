@@ -1,113 +1,231 @@
 import config from './Config.js'
-import { table } from './Table.js'
+import { balls, Ball } from './Balls.js';
 
-const wrapperEl = document.getElementById('wrapper') as HTMLDivElement
-const scoreEl = document.getElementById('score') as HTMLDivElement
-const boardEl = document.getElementById('board') as HTMLDivElement
-const nextEl = document.getElementById('next') as HTMLDivElement
-const clickListeners: ((x: number, y: number, e: MouseEvent) => void)[] = []
-const hoverListeners: ((x: number, y: number, e: MouseEvent) => void)[] = []
-
-const emitClick = (x: number, y: number, ev: MouseEvent): void => {
-  for (const e of clickListeners) { e(x, y, ev) }
+interface Tile {
+  ball?: Ball
+  selected: boolean
+  type?: 'path' | 'prevPath' | 'prevBall'
 }
 
-const emitHover = (x: number, y: number, ev: MouseEvent): void => {
-  for (const e of hoverListeners) { e(x, y, ev) }
-}
-
-const create = (): void => {
-  scoreEl.innerHTML = '0'
-  boardEl.style.gridTemplateRows = `repeat(${config.rows}, 1fr)`
-  boardEl.style.gridTemplateColumns = `repeat(${config.columns}, 1fr)`
-  for (let i = 0; i < config.columns; i++) {
-    for (let j = 0; j < config.rows; j++) {
-      const el = document.createElement('div')
-      el.className = `tile`
-      el.id = `tile${i}x${j}`
-      el.style.background = config.colours.none
-      el.onclick = (e) => emitClick(i, j, e)
-      el.onmouseover = (e) => emitHover(i, j, e)
-      boardEl.appendChild(el)
-    }
-  }
-  for (let i = 0; i < config.nextBalls; i++) {
-    const el = document.createElement('div')
-    el.className = `tile`
-    el.id = `next${i}`
-    el.style.background = config.colours.none
-    nextEl.appendChild(el)
-  }
-}
-
-const getTile = (x: number, y: number): HTMLElement => {
-  const tile = document.getElementById(`tile${x}x${y}`)
-  if (tile === null) { throw new Error(`no tile${x}x${y}`) }
-  return tile
-}
-
-const render = (): void => {
-  scoreEl.innerHTML = table.score.toString()
-  for (const [i, row] of table.entries()) {
-    for (const [j, entry] of row.entries()) {
-      const el = getTile(i, j)
-      el.innerHTML = ''
-      if (entry.ball !== undefined) {
-        const ballEl = document.createElement('div')
-        ballEl.className = 'ball'
-        ballEl.style.background = entry.ball
-        el.appendChild(ballEl)
+/**
+ * Flips the board matrix
+ * @param descriptor confirmMove method descriptor
+ */
+function transform(_: object, __: string, descriptor: any) {
+  const original = descriptor.value
+  descriptor.value = function (x: number, y: number) {
+    original.apply(this, [x, y])
+    const matrix: Tile[][] = Array.from(Array(this.length), () => [])
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this[i].length; j++) {
+        matrix[j][i] = this[i][j]
       }
-      el.style.background = entry.type !== undefined ?
-        config.colours[entry.type] : config.colours.none
+    }
+    for (let i = 0; i < matrix.length; i++) {
+      this[i] = matrix[i]
     }
   }
-  for (const [i, e] of table.nextBalls.entries()) {
-    const el = document.getElementById(`next${i}`) as HTMLElement
-    const ball = document.createElement(`div`)
-    ball.className = 'ball'
-    ball.style.background = e
-    el.innerHTML = ''
-    el.appendChild(ball)
-  }
 }
 
-const lose = () => {
-  const createEl = (id: string, text?: string): HTMLDivElement => {
-    const el = document.createElement('div')
-    el.id = id
-    if (text !== undefined) { el.innerHTML = text }
-    return el
+class Board extends Array<Tile[]>  {
+
+  score = 0
+  readonly nextBalls: Ball[]
+
+  constructor() {
+    super()
+    this.length = config.rows
+    for (let i = 0; i < config.rows; i++) {
+      this[i] = []
+      for (let j = 0; j < config.columns; j++) {
+        this[i][j] = { selected: false }
+      }
+    }
+    this.nextBalls = new Array(config.nextBalls).fill(null).map(() => balls.random())
+    this.appendBalls()
   }
-  const bg = createEl('losebg')
-  const msg = createEl('loseprompt')
-  const header = createEl('loseheader', 'Przegrałeś!')
-  const text = createEl('losetext', `Wynik: ${table.score}`)
-  const button = createEl('losebt', 'Zagraj ponownie')
-  button.onclick = () => {
-    scoreEl.innerHTML = ''
-    boardEl.innerHTML = ''
-    nextEl.innerHTML = ''
-    bg.remove()
-    table.restart()
-    create()
-    render()
+
+  /**
+   * Clears the board and score for game restart
+   */
+  restart() {
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this[i].length; j++) {
+        this[i][j] = { selected: false }
+      }
+    }
+    this.score = 0
+    this.appendBalls()
   }
-  msg.appendChild(header)
-  msg.appendChild(text)
-  msg.appendChild(button)
-  bg.appendChild(msg)
-  wrapperEl.appendChild(bg)
+
+  /**
+   * Sets table elements to path based on given array
+   * @param cells Array of coordinates representing the path
+   */
+  showPath(cells: { x: number, y: number }[]) {
+    for (const e of cells) {
+      this[e.x][e.y].type = 'path'
+    }
+  }
+
+  /**
+   * Clears previously marked path
+   * @param options Optional type of path to clear
+   */
+  clearPath(options?: { clearSelection?: true, clearOnlyPrev?: true, clearOnlyBalls?: true }) {
+    let arr = ['prevPath', 'prevBall', 'path']
+    if (options?.clearOnlyPrev) { arr.pop() }
+    if (options?.clearOnlyBalls) { arr = ['prevBall'] }
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this[i].length; j++) {
+        const cell = this[i][j]
+        if (arr.includes(cell.type as string)) {
+          this[i][j].type = undefined
+        }
+        if (options?.clearSelection && this[i][j].selected) {
+          this[i][j].selected = false
+        }
+      }
+    }
+  }
+
+  /**
+   * Moves selected ball to given position, handles streaks and checks for lose
+   * @param x Coordinate x of the move
+   * @param y Coordinate y of the move
+   */
+  // @transform
+  confirmMove(x: number, y: number): void {
+    let ball: Ball | undefined
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this[i].length; j++) {
+        if (this[i][j].type === 'path') {
+          this[i][j].type = 'prevPath'
+        }
+        if (this[i][j].selected) {
+          this[i][j].selected = false
+          ball = this[i][j].ball
+          this[i][j].ball = undefined
+        }
+      }
+    }
+    if (ball === undefined) {
+      throw new Error('Ball is undefined on move confirm')
+    }
+    this[x][y].ball = ball
+  }
+
+  /** 
+   * @returns Number of points or false if lost
+   */
+  handleMove(): number | false {
+    const ballsToDelete: { x: number, y: number }[] = []
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this[i].length; j++) {
+        ballsToDelete.push(...this.handleStreak(i, j))
+      }
+    }
+    if (ballsToDelete.length !== 0) {
+      for (const e of ballsToDelete) {
+        this[e.x][e.y].ball = undefined
+        this[e.x][e.y].type = 'prevBall'
+      }
+      return ballsToDelete.length
+    }
+    const appendStatus = this.appendBalls()
+    if (appendStatus === 'no space') { return false }
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this[i].length; j++) {
+        ballsToDelete.push(...this.handleStreak(i, j))
+      }
+    }
+    for (const e of ballsToDelete) {
+      this[e.x][e.y].ball = undefined
+      this[e.x][e.y].type = 'prevBall'
+    }
+    if (ballsToDelete.length === 0 && appendStatus === 'full') { return false }
+    return ballsToDelete.length
+  }
+
+  /**
+   * Returns current ball streaks for given tile (checks only half of them)
+   * @param x X coordinate of the tile
+   * @param y Y coordinate of the tile
+   * @returns An array of tiles affected by the streaks
+   */
+  private handleStreak(x: number, y: number): { x: number, y: number }[] {
+    if (this[x][y].ball === undefined) {
+      return []
+    }
+    let streaks: { x: number, y: number }[][] = [...Array(4)].map(() => []);
+    const movedBall = this[x][y].ball as Ball
+    const isStreak = (a: number, b: number) => this[a]?.[b]?.ball === movedBall
+    let i = x - 1
+    let j = y + 1
+    while (isStreak(i, j)) {
+      streaks[0].push({ x: i--, y: j++ })
+    }
+    j = y + 1
+    while (isStreak(x, j)) {
+      streaks[1].push({ x, y: j++ })
+    }
+    i = x + 1
+    j = y + 1
+    while (isStreak(i, j)) {
+      streaks[2].push({ x: i++, y: j++ })
+    }
+    i = x + 1
+    while (isStreak(i, y)) {
+      streaks[3].push({ x: i++, y })
+    }
+    const ballsToDelete = streaks.filter(a => a.length >= config.minStreak - 1).flat()
+    if (ballsToDelete.length > 0) { ballsToDelete.push({ x, y }) }
+    return ballsToDelete
+  }
+
+  /**
+   * Searches for empty tiles in the board
+   * @returns Array of all empty tiles
+   */
+  private findEmptyTiles(): { x: number, y: number }[] {
+    const emptyIndexes: { x: number, y: number }[] = []
+    for (let i = 0; i < this.length; i++) {
+      for (let j = 0; j < this[i].length; j++) {
+        if (this[i][j].ball === undefined) {
+          emptyIndexes.push({ x: i, y: j })
+        }
+      }
+    }
+    return emptyIndexes
+  }
+
+  /**
+   * Puts new balls on board
+   * @returns No space if theres no space for new balls, 
+   * full if theres not empty space after the balls were placed, ok if none of those happened
+   */
+  private appendBalls(): 'ok' | 'no space' | 'full' {
+    const emptyTiles = this.findEmptyTiles()
+    let full = false
+    if (emptyTiles.length < this.nextBalls.length) {
+      return 'no space'
+    } else if (emptyTiles.length === this.nextBalls.length) {
+      full = true
+    }
+    for (const e of this.nextBalls) {
+      const rand = ~~(Math.random() * emptyTiles.length)
+      const tile = emptyTiles[rand]
+      emptyTiles.splice(rand, 1)
+      this[tile.x][tile.y].ball = e
+    }
+    this.nextBalls.length = 0
+    for (let i = 0; i < config.nextBalls; i++) {
+      this.nextBalls.push(balls.random())
+    }
+    if (full) { return 'full' }
+    return 'ok'
+  }
+
 }
 
-export const board = {
-  create,
-  render,
-  lose,
-  onClick: (callback: (x: number, y: number, e: MouseEvent) => void): void => {
-    clickListeners.push(callback)
-  },
-  onHover: (callback: (x: number, y: number, e: MouseEvent) => void): void => {
-    hoverListeners.push(callback)
-  }
-}
+export const board = new Board()
