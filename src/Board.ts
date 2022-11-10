@@ -94,7 +94,7 @@ class Board extends Array<Tile[]>  {
    * @param x Coordinate x of the move
    * @param y Coordinate y of the move
    */
-  // @transform
+  @transform
   confirmMove(x: number, y: number): void {
     let ball: Ball | undefined
     for (let i = 0; i < this.length; i++) {
@@ -122,9 +122,15 @@ class Board extends Array<Tile[]>  {
     const ballsToDelete: { x: number, y: number }[] = []
     for (let i = 0; i < this.length; i++) {
       for (let j = 0; j < this[i].length; j++) {
-        ballsToDelete.push(...this.handleStreak(i, j))
+        const arr = this.handleStreak(i, j)
+        for (const e of arr) {
+          if (!ballsToDelete.some(a => a.x === e.x && a.y === e.y)) {
+            ballsToDelete.push(e)
+          }
+        }
       }
     }
+
     if (ballsToDelete.length !== 0) {
       for (const e of ballsToDelete) {
         this[e.x][e.y].ball = undefined
@@ -136,7 +142,12 @@ class Board extends Array<Tile[]>  {
     if (appendStatus === 'no space') { return false }
     for (let i = 0; i < this.length; i++) {
       for (let j = 0; j < this[i].length; j++) {
-        ballsToDelete.push(...this.handleStreak(i, j))
+        const arr = this.handleStreak(i, j)
+        for (const e of arr) {
+          if (!ballsToDelete.some(a => a.x === e.x && a.y === e.y)) {
+            ballsToDelete.push(e)
+          }
+        }
       }
     }
     for (const e of ballsToDelete) {
