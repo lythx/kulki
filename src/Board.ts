@@ -7,25 +7,25 @@ interface Tile {
   type?: 'path' | 'prevPath' | 'prevBall'
 }
 
-/**
- * Flips the board matrix
- * @param descriptor confirmMove method descriptor
- */
-function transform(_: object, __: string, descriptor: any) {
-  const original = descriptor.value
-  descriptor.value = function (x: number, y: number) {
-    original.apply(this, [x, y])
-    const matrix: Tile[][] = Array.from(Array(this.length), () => [])
-    for (let i = 0; i < this.length; i++) {
-      for (let j = 0; j < this[i].length; j++) {
-        matrix[j][i] = this[i][j]
-      }
-    }
-    for (let i = 0; i < matrix.length; i++) {
-      this[i] = matrix[i]
-    }
-  }
-}
+// /**
+//  * Flips the board matrix
+//  * @param descriptor confirmMove method descriptor
+//  */
+// function transform(_: object, __: string, descriptor: any) {
+//   const original = descriptor.value
+//   descriptor.value = function (x: number, y: number) {
+//     original.apply(this, [x, y])
+//     const matrix: Tile[][] = Array.from(Array(this.length), () => [])
+//     for (let i = 0; i < this.length; i++) {
+//       for (let j = 0; j < this[i].length; j++) {
+//         matrix[j][i] = this[i][j]
+//       }
+//     }
+//     for (let i = 0; i < matrix.length; i++) {
+//       this[i] = matrix[i]
+//     }
+//   }
+// }
 
 class Board extends Array<Tile[]>  {
 
@@ -94,7 +94,7 @@ class Board extends Array<Tile[]>  {
    * @param x Coordinate x of the move
    * @param y Coordinate y of the move
    */
-  @transform
+  //@transform
   confirmMove(x: number, y: number): void {
     let ball: Ball | undefined
     for (let i = 0; i < this.length; i++) {
