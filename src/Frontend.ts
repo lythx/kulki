@@ -108,9 +108,9 @@ const lose = () => {
   }
   const bg = createEl('losebg')
   const msg = createEl('loseprompt')
-  const header = createEl('loseheader', 'Przegrałeś!')
-  const text = createEl('losetext', `Wynik: ${board.score}`)
-  const button = createEl('losebt', 'Zagraj ponownie')
+  const header = createEl('loseheader', 'You&nbsplost!')
+  const text = createEl('losetext', `Score: ${board.score}`)
+  const button = createEl('losebt', 'Play again')
   button.onclick = () => {
     scoreEl.innerHTML = ''
     boardEl.innerHTML = ''
